@@ -1,4 +1,7 @@
+# python song.py (this is just to copy paste when testing ignore this)
 import numpy as np
+# To take data from
+#import main_window.py
 
 # cd audio at 44,100 hz and 16 bits per sample
 SAMPLES_S = 44_100
@@ -22,6 +25,7 @@ def create_pcm(frequency):
 
 def new_wav(channels, filename, *args):
     seconds = len(args)
+    #filename = main_window.songtitle
 
     chunk_size = (int(36 + (seconds * SAMPLES_S * BITS_SAMPLE/8))).to_bytes(4, 'little')
     num_channels = (channels).to_bytes(2, byteorder='little')
@@ -56,4 +60,6 @@ def new_wav(channels, filename, *args):
             mat.tobytes()
         )
 
-new_wav(1,'mysong', 200, 252, 212, 400, 150, 360)
+songtitle = "debug"
+arr = np.array([200, 252, 212, 400, 150, 360])
+new_wav(1, f'{songtitle}', *arr)
