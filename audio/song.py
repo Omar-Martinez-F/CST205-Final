@@ -61,5 +61,6 @@ def new_wav(channels, filename, *args):
         )
 
 songtitle = "debug"
-arr = np.array([200, 252, 212, 400, 150, 360])
+test = np.array([200, 252, 212, 400, 150, 360])
+arr = test
 new_wav(1, f'{songtitle}', *arr)
