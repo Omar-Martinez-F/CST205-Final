@@ -2,7 +2,8 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
     QPushButton, QComboBox, QLineEdit
 )
-from PySide6.QtMultimedia import QSoundEffect
+# from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import QUrl
 
 import sys
@@ -16,8 +17,14 @@ class MainWindow(QMainWindow):
 
         self.note_seq = []
 
-        self.player = QSoundEffect()
-        self.player.setVolume(0.5)
+        # self.player = QSoundEffect()
+        # self.player.setVolume(0.5)
+
+        self.audio_output = QAudioOutput()
+        self.audio_output.setVolume(0.5)
+
+        self.player = QMediaPlayer()
+        self.player.setAudioOutput(self.audio_output)
 
         self.setWindowTitle("Song Generator")
 
