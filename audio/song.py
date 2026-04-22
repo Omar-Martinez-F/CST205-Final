@@ -17,14 +17,15 @@ SUBCHUNK_2_ID = b'data'
 SUBCHUNK_1_SIZE = (16).to_bytes(4, byteorder='little')
 AUDIO_FORMAT = (1).to_bytes(2, byteorder='little')
 
-def create_pcm(frequency):
-    ang_freq = 2*np.pi*frequency
+def create_pcm(frequency, duration =0.5):
+    sample = int(SAMPLES_S*duration)
     x_vals = np.arange(SAMPLES_S)
+    ang_freq = 2 * np.pi * frequency
     y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
     return np.int16(y_vals)
 
-def new_wav(channels, filename, *args):
-    seconds = len(args)
+def new_wav(channels, filename, *frequencies):
+    # seconds = len(args)
     #filename = main_window.songtitle
 
 
@@ -32,6 +33,12 @@ def new_wav(channels, filename, *args):
     sounds_dir = os.path.join(base_dir, "assets", "sounds")
     file_path = os.path.join(sounds_dir, f"{filename}.wav")
 
+    pcm_data = []
+    for freq in frequencies:
+        tone = create_pcm(freq,duration = 0.5)
+        pcm_data.append(tone)
+    full = np.concatenate(pcm_data)
+    seconds = len(full) / SAMPLES_S
 
     chunk_size = (int(36 + (seconds * SAMPLES_S * BITS_SAMPLE/8))).to_bytes(4, 'little')
     num_channels = (channels).to_bytes(2, byteorder='little')
@@ -41,12 +48,12 @@ def new_wav(channels, filename, *args):
     bits_per_sample = (BITS_SAMPLE).to_bytes(2, byteorder='little')
     subchunk_2_size = (int(seconds * SAMPLES_S * BITS_SAMPLE/8)).to_bytes(4, byteorder='little')
 
-    my_pcm = []
+    # my_pcm = []
 
-    for freq in args:
-        my_pcm.append(create_pcm(freq))
+    # for freq in args:
+    #     my_pcm.append(create_pcm(freq))
 
-    mat = np.array(my_pcm)
+    # mat = np.array(my_pcm)
 
     with open(file_path, 'wb') as fo:
         fo.write(
@@ -63,7 +70,7 @@ def new_wav(channels, filename, *args):
             bits_per_sample +
             SUBCHUNK_2_ID +
             subchunk_2_size +
-            mat.tobytes()
+            full.tobytes()
         )
     print(f"Saved to: {file_path}")
     return file_path

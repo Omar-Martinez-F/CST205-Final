@@ -2,13 +2,22 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
     QPushButton, QComboBox, QLineEdit
 )
+from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtCore import QUrl
+
 import sys
+import os
 from audio import song
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.note_seq = []
+
+        self.player = QSoundEffect()
+        self.player.setVolume(0.5)
 
         self.setWindowTitle("Song Generator")
 
@@ -39,6 +48,13 @@ class MainWindow(QMainWindow):
         self.freq_box.addItems(["200", "252", "300", "360", "400"])
         layout.addWidget(self.freq_box)
 
+        
+        self.add_note_btn = QPushButton("Add Note")
+        self.add_note_btn.clicked.connect(self.add_note)
+        layout.addWidget(self.add_note_btn)
+        self.sequence_label = QLabel("Sequence: []")
+        layout.addWidget(self.sequence_label)
+
         self.button = QPushButton("Create Song")
         self.button.clicked.connect(self.make_song)
         layout.addWidget(self.button)
@@ -52,12 +68,27 @@ class MainWindow(QMainWindow):
             self.result_label.setText("Please enter a title")
             return
 
+        if not self.note_seq:
+            self.result_label.setText("Add at least one note")
+            return
+        
         channels = int(self.channel_box.currentText())
+        # freq = int(self.freq_box.currentText())
+
+        file_path = song.new_wav(channels, title, *self.note_seq)
+
+        self.play_audio(file_path)
+        self.result_label.setText(f"Playing {title}.wav (saved in assets/sounds)")
+
+    def play_audio(self,file_path):
+        url = QUrl.fromLocalFile(os.path.abspath(file_path))
+        self.player.setSource(url)
+        self.player.play()
+
+    def add_note(self):
         freq = int(self.freq_box.currentText())
-
-        file_path = song.new_wav(channels, title, freq)
-        self.result_label.setText(f"Saved to assets/sounds/{title}.wav")
-
+        self.note_seq.append(freq)
+        self.sequence_label.setText(f"Sequence: {self.note_seq}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
