@@ -1,13 +1,10 @@
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
-    QPushButton, QComboBox, QLineEdit, QMessageBox
+    QPushButton, QComboBox, QLineEdit
 )
-# Build main ui here 
-# Firt ui implention should be simple dropdown,buttons ect
-# To make this project more unique we should add more features to mess with audio files later
-
 import sys
-import song
+from audio import song
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -50,15 +47,20 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.result_label)
 
     def make_song(self):
-        title = self.title_input.text()
+        title = self.title_input.text().strip()
+        if not title:
+            self.result_label.setText("Please enter a title")
+            return
+
         channels = int(self.channel_box.currentText())
         freq = int(self.freq_box.currentText())
 
-        song.new_wav(channels, title, freq)
-        self.result_label.setText(title + ".wav created")
+        file_path = song.new_wav(channels, title, freq)
+        self.result_label.setText(f"Saved to assets/sounds/{title}.wav")
 
 
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-app.exec()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())

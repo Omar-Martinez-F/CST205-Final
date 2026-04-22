@@ -1,4 +1,5 @@
 import numpy as np
+import os
 # To take data from
 #import main_window.py
 
@@ -26,6 +27,12 @@ def new_wav(channels, filename, *args):
     seconds = len(args)
     #filename = main_window.songtitle
 
+
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    sounds_dir = os.path.join(base_dir, "assets", "sounds")
+    file_path = os.path.join(sounds_dir, f"{filename}.wav")
+
+
     chunk_size = (int(36 + (seconds * SAMPLES_S * BITS_SAMPLE/8))).to_bytes(4, 'little')
     num_channels = (channels).to_bytes(2, byteorder='little')
     sample_rate = (SAMPLES_S).to_bytes(4, byteorder='little')
@@ -36,12 +43,12 @@ def new_wav(channels, filename, *args):
 
     my_pcm = []
 
-    for arg in args:
-        my_pcm.append(create_pcm(arg))
+    for freq in args:
+        my_pcm.append(create_pcm(freq))
 
     mat = np.array(my_pcm)
 
-    with open(f'{filename}.wav', 'wb') as fo:
+    with open(file_path, 'wb') as fo:
         fo.write(
             CHUNK_ID +
             chunk_size +
@@ -58,6 +65,8 @@ def new_wav(channels, filename, *args):
             subchunk_2_size +
             mat.tobytes()
         )
+    print(f"Saved to: {file_path}")
+    return file_path
 
 if __name__ == "__main__":
     songtitle = "debug"
