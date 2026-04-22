@@ -48,11 +48,18 @@ class MainWindow(QMainWindow):
         self.channel_box.addItems(["1", "2", "3"])
         layout.addWidget(self.channel_box)
 
+        bpm_label = QLabel("Edit BPM (*visual only, no functionality yet!*)")
+        layout.addWidget(bpm_label)
+
+        self.bpm_box = QComboBox()
+        self.bpm_box.addItems(["80", "120", "150", "200", "Enter Custom Amount"])
+        layout.addWidget(self.bpm_box)
+
         freq_label = QLabel("Choose frequency")
         layout.addWidget(freq_label)
 
         self.freq_box = QComboBox()
-        self.freq_box.addItems(["200", "252", "300", "360", "400"])
+        self.freq_box.addItems(["0", "200", "252", "300", "360", "400"])
         layout.addWidget(self.freq_box)
 
         
