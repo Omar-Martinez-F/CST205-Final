@@ -41,6 +41,17 @@ class MainWindow(QMainWindow):
         self.title_input.setPlaceholderText("Enter song title")
         layout.addWidget(self.title_input)
 
+        delete_label = QLabel("Delete file")
+        layout.addWidget(delete_label)
+
+        self.delete_input = QLineEdit()
+        self.delete_input.setPlaceholderText("Enter name of file to delete")
+        layout.addWidget(self.delete_input)
+
+        self.del_button = QPushButton("Delete song (Cannot be undone!)")
+        self.del_button.clicked.connect(self.delete_song)
+        layout.addWidget(self.del_button)
+
         channel_label = QLabel("Choose channels")
         layout.addWidget(channel_label)
 
@@ -103,6 +114,12 @@ class MainWindow(QMainWindow):
         freq = int(self.freq_box.currentText())
         self.note_seq.append(freq)
         self.sequence_label.setText(f"Sequence: {self.note_seq}")
+    
+    def delete_song(self):
+        file_delete = self.delete_input.text().strip()
+        os.remove(f'assets/sounds/{file_delete}.wav')
+
+        #if(!os.path.abspath(file_path))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
