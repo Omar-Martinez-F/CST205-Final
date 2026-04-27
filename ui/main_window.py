@@ -2,6 +2,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
     QPushButton, QComboBox, QLineEdit
 )
+
 # from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import QUrl
@@ -52,7 +53,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(freq_label)
 
         self.freq_box = QComboBox()
-        self.freq_box.addItems(["200", "252", "300", "360", "400"])
+        self.freq_box.addItems(["0", "200", "252", "300", "360", "400"])
         layout.addWidget(self.freq_box)
 
         
