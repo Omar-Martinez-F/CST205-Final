@@ -165,12 +165,6 @@ class MainWindow(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.visualizer.undate_bars)
 
-        self.visualizer = Visualizer()
-        self.visualizer.setMinimumHeight(150)
-        layout.addWidget(self.visualizer)
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.visualizer.undate_bars)
-
     def make_song(self):
         title = self.title_input.text().strip()
         if not title:
