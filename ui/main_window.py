@@ -103,12 +103,9 @@ class MainWindow(QMainWindow):
         self.sequence_label = QLabel("Sequence: []")
         layout.addWidget(self.sequence_label)
 
-        self.delete_note_btn = QPushButton("Delete Last Tone")
-        self.delete_note_btn.clicked.connect(self.delete_note)
-        layout.addWidget(self.delete_note_btn)
-
-        self.sequence_label = QLabel("Sequence: []")
-        layout.addWidget(self.sequence_label)
+        self.del_note_btn = QPushButton("Remove last note")
+        self.del_note_btn.clicked.connect(self.del_note)
+        layout.addWidget(self.del_note_btn)
 
         self.button = QPushButton("Create Song")
         self.button.clicked.connect(self.make_song)
@@ -161,15 +158,13 @@ class MainWindow(QMainWindow):
         file_delete = self.delete_input.text().strip()
         os.remove(f'assets/sounds/{file_delete}.wav')
 
-    def delete_note(self):
+    def del_note(self):
         if self.note_seq:
             self.note_seq.pop()
             self.sequence_label.setText(f"Sequence: {self.note_seq}")
             self.result_label.setText("Last tone removed")
         else:
             self.result_label.setText("No tones to delete")
-
-        #if(!os.path.abspath(file_path))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
