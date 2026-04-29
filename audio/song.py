@@ -1,5 +1,6 @@
 import numpy as np
 import os
+from scipy import signal
 # To take data from
 #import main_window.py
 
@@ -21,8 +22,13 @@ def create_pcm(frequency, duration =0.5):
     sample = int(SAMPLES_S*duration)
     x_vals = np.arange(SAMPLES_S)
     ang_freq = 2 * np.pi * frequency
+    ang_freq2 = 2 * np.pi * (frequency-200)
     y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
-    return np.int16(y_vals)
+    y2_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+    #y_avg = (y_vals + y2_vals) / 2
+    # Swap y2_vals & y_vals to switch between sine or sawtooth
+    return np.int16(y2_vals)
+
 
 def new_wav(channels, filename, *frequencies):
     # seconds = len(args)
