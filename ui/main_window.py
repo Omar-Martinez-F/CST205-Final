@@ -10,6 +10,8 @@ import random
 import sys
 import os
 from audio import song
+import numpy as np
+from scipy import signal
 
 # This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
 # For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
@@ -107,6 +109,16 @@ class MainWindow(QMainWindow):
         self.title_input.setPlaceholderText("Enter song title")
         layout.addWidget(self.title_input)
 
+        self.instrument_label = QLabel("Choose instrument")
+        layout.addWidget(self.instrument_label)
+        self.instrument_box = QComboBox()
+        self.instrument_box.addItems(["<choose instrument>", "Sine Wave", "Sawtooth Wave"])
+        layout.addWidget(self.instrument_box)
+        
+        self.inst_confirm = QPushButton("Confirm instrument")
+        self.inst_confirm.clicked.connect(self.switch_inst)
+        layout.addWidget(self.inst_confirm)
+
         delete_label = QLabel("Delete file")
         layout.addWidget(delete_label)
 
@@ -165,6 +177,7 @@ class MainWindow(QMainWindow):
 
     def make_song(self):
         title = self.title_input.text().strip()
+        inst = self.instrument_box.currentText()
         if not title:
             self.result_label.setText("Please enter a title")
             return
@@ -172,11 +185,17 @@ class MainWindow(QMainWindow):
         if not self.note_seq:
             self.result_label.setText("Add at least one note")
             return
+
+        # = self.inst_confirm.text().strip()
+        if not inst:
+            self.result_label.setTest("Please select instrument")
+            return
         
         channels = int(self.channel_box.currentText())
-        # freq = int(self.freq_box.currentText())
-
+        freq = int(self.freq_box.currentText())
         file_path = song.new_wav(channels, title, *self.note_seq)
+
+        #file_path = song.new_wav(channels, title, *self.note_seq)
 
         self.play_audio(file_path)
         self.result_label.setText(f"Playing {title}.wav (saved in assets/sounds)")
@@ -208,6 +227,28 @@ class MainWindow(QMainWindow):
             self.result_label.setText("Last tone removed")
         else:
             self.result_label.setText("No tones to delete")
+
+    def switch_inst(self):
+       inst = self.instrument_box.currentText()
+       freq = int(self.freq_box.currentText())
+       duration = 0.5
+       SAMPLES_S = 44_100
+       sample = int(SAMPLES_S*duration)
+       x_vals = np.arange(SAMPLES_S)
+       ang_freq = 2 * np.pi * freq
+       
+       if inst == "Sine Wave":
+            y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
+            self.result_label.setText("Instrument switched to Sine Wave")
+            song.create_pcm(freq, y_vals, duration=0.5)
+       if inst == "Sawtooth Wave":
+            y_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+            self.result_label.setText("Instrument switched to Sawtooth Wave")
+            song.create_pcm(freq, y_vals, duration=0.5)
+
+       if inst == "<choose instrument>":
+            self.result_label.setText("Please select instrument")
+            return
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

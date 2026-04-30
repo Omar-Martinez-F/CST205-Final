@@ -18,16 +18,16 @@ SUBCHUNK_2_ID = b'data'
 SUBCHUNK_1_SIZE = (16).to_bytes(4, byteorder='little')
 AUDIO_FORMAT = (1).to_bytes(2, byteorder='little')
 
-def create_pcm(frequency, duration =0.5):
+def create_pcm(frequency, y_vals, duration =0.5):
     sample = int(SAMPLES_S*duration)
     x_vals = np.arange(SAMPLES_S)
     ang_freq = 2 * np.pi * frequency
-    ang_freq2 = 2 * np.pi * (frequency-200)
-    y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
-    y2_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+    #ang_freq2 = 2 * np.pi * (frequency-200)
+    #y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
+    #y2_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
     #y_avg = (y_vals + y2_vals) / 2
     # Swap y2_vals & y_vals to switch between sine or sawtooth
-    return np.int16(y2_vals)
+    return np.int16(y_vals)
 
 
 def new_wav(channels, filename, *frequencies):
@@ -41,7 +41,7 @@ def new_wav(channels, filename, *frequencies):
 
     pcm_data = []
     for freq in frequencies:
-        tone = create_pcm(freq,duration = 0.5)
+        tone = create_pcm(freq,y_vals,duration = 0.5)
         pcm_data.append(tone)
     full = np.concatenate(pcm_data)
     seconds = len(full) / SAMPLES_S
