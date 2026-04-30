@@ -178,6 +178,15 @@ class MainWindow(QMainWindow):
     def make_song(self):
         title = self.title_input.text().strip()
         inst = self.instrument_box.currentText()
+        freq = int(self.freq_box.currentText())
+        duration = 0.5
+        SAMPLES_S = 44_100
+        sample = int(SAMPLES_S*duration)
+        x_vals = np.arange(SAMPLES_S)
+        ang_freq = 2 * np.pi * freq
+        #y_val = 369
+        # Placeholder ^
+        
         if not title:
             self.result_label.setText("Please enter a title")
             return
@@ -185,15 +194,19 @@ class MainWindow(QMainWindow):
         if not self.note_seq:
             self.result_label.setText("Add at least one note")
             return
-
-        # = self.inst_confirm.text().strip()
-        if not inst:
-            self.result_label.setTest("Please select instrument")
-            return
         
         channels = int(self.channel_box.currentText())
-        freq = int(self.freq_box.currentText())
-        file_path = song.new_wav(channels, title, *self.note_seq)
+
+        if inst == "Sine Wave":
+            y_val = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
+            song.create_pcm(freq, y_val, duration=0.5)
+        if inst == "Sawtooth Wave":
+            y_val = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+            song.create_pcm(freq, y_val, duration=0.5)
+
+        #self.result_label.setText(f"Y-VALS IS {y_vals}")
+        
+        file_path = song.new_wav(channels, title, y_val, *self.note_seq)
 
         #file_path = song.new_wav(channels, title, *self.note_seq)
 

@@ -18,7 +18,7 @@ SUBCHUNK_2_ID = b'data'
 SUBCHUNK_1_SIZE = (16).to_bytes(4, byteorder='little')
 AUDIO_FORMAT = (1).to_bytes(2, byteorder='little')
 
-def create_pcm(frequency, y_vals, duration =0.5):
+def create_pcm(frequency, y_vals, duration=0.5):
     sample = int(SAMPLES_S*duration)
     x_vals = np.arange(SAMPLES_S)
     ang_freq = 2 * np.pi * frequency
@@ -30,7 +30,7 @@ def create_pcm(frequency, y_vals, duration =0.5):
     return np.int16(y_vals)
 
 
-def new_wav(channels, filename, *frequencies):
+def new_wav(channels, filename, y_vals, *frequencies):
     # seconds = len(args)
     #filename = main_window.songtitle
 
@@ -41,7 +41,7 @@ def new_wav(channels, filename, *frequencies):
 
     pcm_data = []
     for freq in frequencies:
-        tone = create_pcm(freq,y_vals,duration = 0.5)
+        tone = create_pcm(freq,y_vals,duration=0.5)
         pcm_data.append(tone)
     full = np.concatenate(pcm_data)
     seconds = len(full) / SAMPLES_S
