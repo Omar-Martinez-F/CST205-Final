@@ -184,8 +184,6 @@ class MainWindow(QMainWindow):
         sample = int(SAMPLES_S*duration)
         x_vals = np.arange(SAMPLES_S)
         ang_freq = 2 * np.pi * freq
-        #y_val = 369
-        # Placeholder ^
         
         if not title:
             self.result_label.setText("Please enter a title")
