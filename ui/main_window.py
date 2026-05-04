@@ -1,11 +1,14 @@
-from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
-    QPushButton, QComboBox, QLineEdit, QHBoxLayout
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
+    QPushButton, QComboBox, QLineEdit, QHBoxLayout, QSlider
 )
 
 # from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PySide6.QtCore import QUrl, QTimer
+from PySide6.QtCore import QUrl , QTimer, Qt
 from PySide6.QtGui import QPainter, QColor
+
+
 import random
 import sys
 import os
@@ -84,9 +87,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.note_seq = []
-
-        # self.player = QSoundEffect()
-        # self.player.setVolume(0.5)
+        self.current_file = None
+        self.looping = False 
 
         self.audio_output = QAudioOutput()
         self.audio_output.setVolume(0.5)
@@ -169,6 +171,41 @@ class MainWindow(QMainWindow):
         self.result_label = QLabel("")
         layout.addWidget(self.result_label)
 
+        layout.addWidget(QLabel("Player controls"))
+
+        self.play_btn = QPushButton("Play")
+        self.play_btn.clicked.connect(self.play_current)
+        layout.addWidget(self.play_btn)
+
+        self.pause_btn = QPushButton("Pause")
+        self.pause_btn.clicked.connect(self.player.pause)
+
+        self.stop_btn = QPushButton("Stop")
+        self.stop_btn.clicked.connect(self.player.stop)
+        layout.addWidget(self.stop_btn)
+
+        self.loop_btn = QPushButton("Loop: OFF")
+        self.loop_btn.clicked.connect(self.toggle_loop)
+        layout.addWidget(self.loop_btn)
+
+        layout.addWidget(QLabel("Volume"))
+        self.volume_slider = QSlider(Qt.Horizontal)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(50)
+        self.volume_slider.valueChanged.connect(self.change_volume)
+        layout.addWidget(self.volume_slider)
+
+        layout.addWidget(QLabel("Progress"))
+        self.progress = QSlider(Qt.Horizontal)
+        self.progress.setRange(0, 100)
+        self.progress.sliderMoved.connect(self.seek_audio)
+        layout.addWidget(self.progress)
+
+        self.player.positionChanged.connect(self.update_progress)
+        self.player.durationChanged.connect(self.set_duration)
+        self.player.mediaStatusChanged.connect(self.handle_loop)
+
+
         self.visualizer = Visualizer()
         self.visualizer.setMinimumHeight(150)
         layout.addWidget(self.visualizer)
@@ -208,8 +245,13 @@ class MainWindow(QMainWindow):
 
         #file_path = song.new_wav(channels, title, *self.note_seq)
 
+       
+        self.current_file = file_path
         self.play_audio(file_path)
         self.result_label.setText(f"Playing {title}.wav (saved in assets/sounds)")
+
+        self.note_seq = []
+        self.sequence_label.setText("Sequence: []")
 
     def play_audio(self,file_path):
         url = QUrl.fromLocalFile(os.path.abspath(file_path))
@@ -221,6 +263,38 @@ class MainWindow(QMainWindow):
     def handle_state(self, state):
         if state == QMediaPlayer.StoppedState:
             self.timer.stop()
+
+    
+    def play_current(self):
+        if self.current_file:
+            self.play_audio(self.current_file)
+    
+    def toggle_loop(self):
+        self.looping = not self.looping
+        self.loop_btn.setText(f"Loop: {'ON' if self.looping else 'OFF'}")
+    
+    def change_volume(self, value):
+        self.audio_output.setVolume(value / 100)
+
+    def seek_audio(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            self.player.setPosition(int(duration * (position / 100)))
+
+    def update_progress(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            percent = int((position / duration) * 100)
+            self.progress.setValue(percent)
+
+    def set_duration(self, duration):
+        self.progress.setRange(0, 100)
+
+    def handle_loop(self, status):
+        from PySide6.QtMultimedia import QMediaPlayer
+        if status == QMediaPlayer.EndOfMedia and self.looping:
+            self.player.setPosition(0)
+            self.player.play()
 
     def add_note(self):
         freq = int(self.freq_box.currentText())
