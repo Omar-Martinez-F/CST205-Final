@@ -13,52 +13,6 @@ import random
 import sys
 import os
 from audio import song
-import numpy as np
-from scipy import signal
-
-# This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
-# For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
-class Visualizer(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.bars = [0] * 20
-    
-    def undate_bars(self):
-        self.bars = [random.randint(10,100) for _ in self.bars]
-        self.update()
-    
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setBrush(QColor("blue"))
-
-        width = self.width() / len(self.bars)
-
-        for i , height in enumerate(self.bars):
-            painter.drawRect(int(i*width), self.height() - height, int(width-2),height)
-
-
-
-# This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
-# For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
-class Visualizer(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.bars = [0] * 20
-    
-    def undate_bars(self):
-        self.bars = [random.randint(10,100) for _ in self.bars]
-        self.update()
-    
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setBrush(QColor("blue"))
-
-        width = self.width() / len(self.bars)
-
-        for i , height in enumerate(self.bars):
-            painter.drawRect(int(i*width), self.height() - height, int(width-2),height)
-
-
 
 
 # This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
@@ -111,16 +65,6 @@ class MainWindow(QMainWindow):
         self.title_input.setPlaceholderText("Enter song title")
         layout.addWidget(self.title_input)
 
-        self.instrument_label = QLabel("Choose instrument")
-        layout.addWidget(self.instrument_label)
-        self.instrument_box = QComboBox()
-        self.instrument_box.addItems(["<choose instrument>", "Sine Wave", "Sawtooth Wave"])
-        layout.addWidget(self.instrument_box)
-        
-        self.inst_confirm = QPushButton("Confirm instrument")
-        self.inst_confirm.clicked.connect(self.switch_inst)
-        layout.addWidget(self.inst_confirm)
-
         delete_label = QLabel("Delete file")
         layout.addWidget(delete_label)
 
@@ -160,9 +104,12 @@ class MainWindow(QMainWindow):
         self.sequence_label = QLabel("Sequence: []")
         layout.addWidget(self.sequence_label)
 
-        self.del_note_btn = QPushButton("Remove last note")
-        self.del_note_btn.clicked.connect(self.del_note)
-        layout.addWidget(self.del_note_btn)
+        self.delete_note_btn = QPushButton("Delete Last Tone")
+        self.delete_note_btn.clicked.connect(self.delete_note)
+        layout.addWidget(self.delete_note_btn)
+
+        self.sequence_label = QLabel("Sequence: []")
+        layout.addWidget(self.sequence_label)
 
         self.button = QPushButton("Create Song")
         self.button.clicked.connect(self.make_song)
@@ -214,14 +161,6 @@ class MainWindow(QMainWindow):
 
     def make_song(self):
         title = self.title_input.text().strip()
-        inst = self.instrument_box.currentText()
-        freq = int(self.freq_box.currentText())
-        duration = 0.5
-        SAMPLES_S = 44_100
-        sample = int(SAMPLES_S*duration)
-        x_vals = np.arange(SAMPLES_S)
-        ang_freq = 2 * np.pi * freq
-        
         if not title:
             self.result_label.setText("Please enter a title")
             return
@@ -231,19 +170,9 @@ class MainWindow(QMainWindow):
             return
         
         channels = int(self.channel_box.currentText())
+        # freq = int(self.freq_box.currentText())
 
-        if inst == "Sine Wave":
-            y_val = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
-            song.create_pcm(freq, y_val, duration=0.5)
-        if inst == "Sawtooth Wave":
-            y_val = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
-            song.create_pcm(freq, y_val, duration=0.5)
-
-        #self.result_label.setText(f"Y-VALS IS {y_vals}")
-        
-        file_path = song.new_wav(channels, title, y_val, *self.note_seq)
-
-        #file_path = song.new_wav(channels, title, *self.note_seq)
+        file_path = song.new_wav(channels, title, *self.note_seq)
 
        
         self.current_file = file_path
@@ -305,7 +234,7 @@ class MainWindow(QMainWindow):
         file_delete = self.delete_input.text().strip()
         os.remove(f'assets/sounds/{file_delete}.wav')
 
-    def del_note(self):
+    def delete_note(self):
         if self.note_seq:
             self.note_seq.pop()
             self.sequence_label.setText(f"Sequence: {self.note_seq}")
@@ -313,27 +242,7 @@ class MainWindow(QMainWindow):
         else:
             self.result_label.setText("No tones to delete")
 
-    def switch_inst(self):
-       inst = self.instrument_box.currentText()
-       freq = int(self.freq_box.currentText())
-       duration = 0.5
-       SAMPLES_S = 44_100
-       sample = int(SAMPLES_S*duration)
-       x_vals = np.arange(SAMPLES_S)
-       ang_freq = 2 * np.pi * freq
-       
-       if inst == "Sine Wave":
-            y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
-            self.result_label.setText("Instrument switched to Sine Wave")
-            song.create_pcm(freq, y_vals, duration=0.5)
-       if inst == "Sawtooth Wave":
-            y_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
-            self.result_label.setText("Instrument switched to Sawtooth Wave")
-            song.create_pcm(freq, y_vals, duration=0.5)
-
-       if inst == "<choose instrument>":
-            self.result_label.setText("Please select instrument")
-            return
+        #if(!os.path.abspath(file_path))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
