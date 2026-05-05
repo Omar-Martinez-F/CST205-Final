@@ -1,11 +1,9 @@
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
-    QPushButton, QComboBox, QLineEdit, QHBoxLayout, QSlider
-)
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
+    QPushButton, QComboBox, QLineEdit, QHBoxLayout, QSlider)
 
 # from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PySide6.QtCore import QUrl , QTimer, Qt
+from PySide6.QtCore import QUrl, QTimer, Qt
 from PySide6.QtGui import QPainter, QColor
 
 
@@ -13,7 +11,8 @@ import random
 import sys
 import os
 from audio import song
-
+import numpy as np
+from scipy import signal
 
 # This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
 # For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
@@ -44,6 +43,9 @@ class MainWindow(QMainWindow):
         self.current_file = None
         self.looping = False 
 
+        # self.player = QSoundEffect()
+        # self.player.setVolume(0.5)
+
         self.audio_output = QAudioOutput()
         self.audio_output.setVolume(0.5)
 
@@ -64,6 +66,16 @@ class MainWindow(QMainWindow):
         self.title_input = QLineEdit()
         self.title_input.setPlaceholderText("Enter song title")
         layout.addWidget(self.title_input)
+
+        self.instrument_label = QLabel("Choose instrument")
+        layout.addWidget(self.instrument_label)
+        self.instrument_box = QComboBox()
+        self.instrument_box.addItems(["<choose instrument>", "Sine Wave", "Sawtooth Wave"])
+        layout.addWidget(self.instrument_box)
+        
+        #self.inst_confirm = QPushButton("Confirm instrument")
+        #self.inst_confirm.clicked.connect(self.switch_inst)
+        #layout.addWidget(self.inst_confirm)
 
         delete_label = QLabel("Delete file")
         layout.addWidget(delete_label)
@@ -117,7 +129,7 @@ class MainWindow(QMainWindow):
 
         self.result_label = QLabel("")
         layout.addWidget(self.result_label)
-
+        
         layout.addWidget(QLabel("Player controls"))
 
         self.play_btn = QPushButton("Play")
@@ -152,7 +164,6 @@ class MainWindow(QMainWindow):
         self.player.durationChanged.connect(self.set_duration)
         self.player.mediaStatusChanged.connect(self.handle_loop)
 
-
         self.visualizer = Visualizer()
         self.visualizer.setMinimumHeight(150)
         layout.addWidget(self.visualizer)
@@ -161,6 +172,14 @@ class MainWindow(QMainWindow):
 
     def make_song(self):
         title = self.title_input.text().strip()
+        inst = self.instrument_box.currentText()
+        #freq = int(self.freq_box.currentText())
+        duration = 0.5
+        SAMPLES_S = 44_100
+        sample = int(SAMPLES_S*duration)
+        x_vals = np.arange(SAMPLES_S)
+        #ang_freq = 2 * np.pi * freq
+        
         if not title:
             self.result_label.setText("Please enter a title")
             return
@@ -170,9 +189,19 @@ class MainWindow(QMainWindow):
             return
         
         channels = int(self.channel_box.currentText())
-        # freq = int(self.freq_box.currentText())
 
-        file_path = song.new_wav(channels, title, *self.note_seq)
+        #  if inst == "Sine Wave":
+        #      y_val = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
+        #      song.create_pcm(freq, y_val, duration=0.5)
+        #  if inst == "Sawtooth Wave":
+        #      y_val = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+        #      song.create_pcm(freq, y_val, duration=0.5)
+
+        #self.result_label.setText(f"Y-VALS IS {y_vals}")
+        
+        file_path = song.new_wav(channels, title, inst, *self.note_seq)
+
+        #file_path = song.new_wav(channels, title, *self.note_seq)
 
        
         self.current_file = file_path
@@ -242,7 +271,58 @@ class MainWindow(QMainWindow):
         else:
             self.result_label.setText("No tones to delete")
 
-        #if(!os.path.abspath(file_path))
+    # def switch_inst(self):
+    #    inst = self.instrument_box.currentText()
+    #    freq = int(self.freq_box.currentText())
+    #    duration = 0.5
+    #    SAMPLES_S = 44_100
+    #    sample = int(SAMPLES_S*duration)
+    #    x_vals = np.arange(SAMPLES_S)
+    #    ang_freq = 2 * np.pi * freq
+       
+    #    if inst == "Sine Wave":
+    #         #y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
+    #         self.result_label.setText("Instrument switched to Sine Wave")
+    #         #song.create_pcm(freq, y_vals, duration=0.5)
+    #    if inst == "Sawtooth Wave":
+    #         #y_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+    #         self.result_label.setText("Instrument switched to Sawtooth Wave")
+    #         #song.create_pcm(freq, y_vals, duration=0.5)
+
+    #    if inst == "<choose instrument>":
+    #         self.result_label.setText("Please select instrument")
+    #         return
+
+    def play_current(self):
+        if self.current_file:
+            self.play_audio(self.current_file)
+    
+    def toggle_loop(self):
+        self.looping = not self.looping
+        self.loop_btn.setText(f"Loop: {'ON' if self.looping else 'OFF'}")
+
+    def handle_loop(self, status):
+        from PySide6.QtMultimedia import QMediaPlayer
+        if status == QMediaPlayer.EndOfMedia and self.looping:
+            self.player.setPosition(0)
+            self.player.play()
+
+    def update_progress(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            percent = int((position / duration) * 100)
+            self.progress.setValue(percent)
+
+    def change_volume(self, value):
+        self.audio_output.setVolume(value / 100)
+
+    def seek_audio(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            self.player.setPosition(int(duration * (position / 100)))
+
+    def set_duration(self, duration):
+        self.progress.setRange(0, 100)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
