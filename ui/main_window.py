@@ -1,10 +1,9 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
-    QPushButton, QComboBox, QLineEdit, QHBoxLayout
-)
+    QPushButton, QComboBox, QLineEdit, QHBoxLayout, QSlider)
 
 # from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PySide6.QtCore import QUrl, QTimer
+from PySide6.QtCore import QUrl, QTimer, Qt
 from PySide6.QtGui import QPainter, QColor
 import random
 import sys
@@ -84,6 +83,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.note_seq = []
+        self.current_file = None
+        self.looping = False 
 
         # self.player = QSoundEffect()
         # self.player.setVolume(0.5)
@@ -115,9 +116,9 @@ class MainWindow(QMainWindow):
         self.instrument_box.addItems(["<choose instrument>", "Sine Wave", "Sawtooth Wave"])
         layout.addWidget(self.instrument_box)
         
-        self.inst_confirm = QPushButton("Confirm instrument")
-        self.inst_confirm.clicked.connect(self.switch_inst)
-        layout.addWidget(self.inst_confirm)
+        #self.inst_confirm = QPushButton("Confirm instrument")
+        #self.inst_confirm.clicked.connect(self.switch_inst)
+        #layout.addWidget(self.inst_confirm)
 
         delete_label = QLabel("Delete file")
         layout.addWidget(delete_label)
@@ -168,6 +169,40 @@ class MainWindow(QMainWindow):
 
         self.result_label = QLabel("")
         layout.addWidget(self.result_label)
+        
+        layout.addWidget(QLabel("Player controls"))
+
+        self.play_btn = QPushButton("Play")
+        self.play_btn.clicked.connect(self.play_current)
+        layout.addWidget(self.play_btn)
+
+        self.pause_btn = QPushButton("Pause")
+        self.pause_btn.clicked.connect(self.player.pause)
+
+        self.stop_btn = QPushButton("Stop")
+        self.stop_btn.clicked.connect(self.player.stop)
+        layout.addWidget(self.stop_btn)
+
+        self.loop_btn = QPushButton("Loop: OFF")
+        self.loop_btn.clicked.connect(self.toggle_loop)
+        layout.addWidget(self.loop_btn)
+
+        layout.addWidget(QLabel("Volume"))
+        self.volume_slider = QSlider(Qt.Horizontal)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(50)
+        self.volume_slider.valueChanged.connect(self.change_volume)
+        layout.addWidget(self.volume_slider)
+
+        layout.addWidget(QLabel("Progress"))
+        self.progress = QSlider(Qt.Horizontal)
+        self.progress.setRange(0, 100)
+        self.progress.sliderMoved.connect(self.seek_audio)
+        layout.addWidget(self.progress)
+
+        self.player.positionChanged.connect(self.update_progress)
+        self.player.durationChanged.connect(self.set_duration)
+        self.player.mediaStatusChanged.connect(self.handle_loop)
 
         self.visualizer = Visualizer()
         self.visualizer.setMinimumHeight(150)
@@ -178,12 +213,12 @@ class MainWindow(QMainWindow):
     def make_song(self):
         title = self.title_input.text().strip()
         inst = self.instrument_box.currentText()
-        freq = int(self.freq_box.currentText())
+        #freq = int(self.freq_box.currentText())
         duration = 0.5
         SAMPLES_S = 44_100
         sample = int(SAMPLES_S*duration)
         x_vals = np.arange(SAMPLES_S)
-        ang_freq = 2 * np.pi * freq
+        #ang_freq = 2 * np.pi * freq
         
         if not title:
             self.result_label.setText("Please enter a title")
@@ -195,16 +230,16 @@ class MainWindow(QMainWindow):
         
         channels = int(self.channel_box.currentText())
 
-        if inst == "Sine Wave":
-            y_val = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
-            song.create_pcm(freq, y_val, duration=0.5)
-        if inst == "Sawtooth Wave":
-            y_val = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
-            song.create_pcm(freq, y_val, duration=0.5)
+        #  if inst == "Sine Wave":
+        #      y_val = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
+        #      song.create_pcm(freq, y_val, duration=0.5)
+        #  if inst == "Sawtooth Wave":
+        #      y_val = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+        #      song.create_pcm(freq, y_val, duration=0.5)
 
         #self.result_label.setText(f"Y-VALS IS {y_vals}")
         
-        file_path = song.new_wav(channels, title, y_val, *self.note_seq)
+        file_path = song.new_wav(channels, title, inst, *self.note_seq)
 
         #file_path = song.new_wav(channels, title, *self.note_seq)
 
@@ -239,27 +274,58 @@ class MainWindow(QMainWindow):
         else:
             self.result_label.setText("No tones to delete")
 
-    def switch_inst(self):
-       inst = self.instrument_box.currentText()
-       freq = int(self.freq_box.currentText())
-       duration = 0.5
-       SAMPLES_S = 44_100
-       sample = int(SAMPLES_S*duration)
-       x_vals = np.arange(SAMPLES_S)
-       ang_freq = 2 * np.pi * freq
+    # def switch_inst(self):
+    #    inst = self.instrument_box.currentText()
+    #    freq = int(self.freq_box.currentText())
+    #    duration = 0.5
+    #    SAMPLES_S = 44_100
+    #    sample = int(SAMPLES_S*duration)
+    #    x_vals = np.arange(SAMPLES_S)
+    #    ang_freq = 2 * np.pi * freq
        
-       if inst == "Sine Wave":
-            y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
-            self.result_label.setText("Instrument switched to Sine Wave")
-            song.create_pcm(freq, y_vals, duration=0.5)
-       if inst == "Sawtooth Wave":
-            y_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
-            self.result_label.setText("Instrument switched to Sawtooth Wave")
-            song.create_pcm(freq, y_vals, duration=0.5)
+    #    if inst == "Sine Wave":
+    #         #y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
+    #         self.result_label.setText("Instrument switched to Sine Wave")
+    #         #song.create_pcm(freq, y_vals, duration=0.5)
+    #    if inst == "Sawtooth Wave":
+    #         #y_vals = 32767 * .4 * signal.sawtooth(ang_freq * x_vals / SAMPLES_S)
+    #         self.result_label.setText("Instrument switched to Sawtooth Wave")
+    #         #song.create_pcm(freq, y_vals, duration=0.5)
 
-       if inst == "<choose instrument>":
-            self.result_label.setText("Please select instrument")
-            return
+    #    if inst == "<choose instrument>":
+    #         self.result_label.setText("Please select instrument")
+    #         return
+
+    def play_current(self):
+        if self.current_file:
+            self.play_audio(self.current_file)
+    
+    def toggle_loop(self):
+        self.looping = not self.looping
+        self.loop_btn.setText(f"Loop: {'ON' if self.looping else 'OFF'}")
+
+    def handle_loop(self, status):
+        from PySide6.QtMultimedia import QMediaPlayer
+        if status == QMediaPlayer.EndOfMedia and self.looping:
+            self.player.setPosition(0)
+            self.player.play()
+
+    def update_progress(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            percent = int((position / duration) * 100)
+            self.progress.setValue(percent)
+
+    def change_volume(self, value):
+        self.audio_output.setVolume(value / 100)
+
+    def seek_audio(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            self.player.setPosition(int(duration * (position / 100)))
+
+    def set_duration(self, duration):
+        self.progress.setRange(0, 100)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
