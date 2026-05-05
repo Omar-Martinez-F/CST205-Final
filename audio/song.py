@@ -29,6 +29,7 @@ def create_pcm(frequency, instrument, duration=0.5):
     #y_avg = (y_vals + y2_vals) / 2
     # Swap y2_vals & y_vals to switch between sine or sawtooth
 
+    #Use Sine Wave as default
     if instrument == "":
         y_vals = 32767 * .3 * np.sin(ang_freq * x_vals / SAMPLES_S)
 
