@@ -1,8 +1,8 @@
 import numpy as np
 import os
-from scipy import signal
 # To take data from
 #import main_window.py
+from scipy import signal
 
 # cd audio at 44,100 hz and 16 bits per sample
 SAMPLES_S = 44_100

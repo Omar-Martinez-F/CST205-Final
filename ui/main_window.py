@@ -35,51 +35,6 @@ class Visualizer(QWidget):
             painter.drawRect(int(i*width), self.height() - height, int(width-2),height)
 
 
-
-# This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
-# For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
-class Visualizer(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.bars = [0] * 20
-    
-    def undate_bars(self):
-        self.bars = [random.randint(10,100) for _ in self.bars]
-        self.update()
-    
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setBrush(QColor("blue"))
-
-        width = self.width() / len(self.bars)
-
-        for i , height in enumerate(self.bars):
-            painter.drawRect(int(i*width), self.height() - height, int(width-2),height)
-
-
-
-
-# This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
-# For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
-class Visualizer(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.bars = [0] * 20
-    
-    def undate_bars(self):
-        self.bars = [random.randint(10,100) for _ in self.bars]
-        self.update()
-    
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setBrush(QColor("blue"))
-
-        width = self.width() / len(self.bars)
-
-        for i , height in enumerate(self.bars):
-            painter.drawRect(int(i*width), self.height() - height, int(width-2),height)
-
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -161,9 +116,12 @@ class MainWindow(QMainWindow):
         self.sequence_label = QLabel("Sequence: []")
         layout.addWidget(self.sequence_label)
 
-        self.del_note_btn = QPushButton("Remove last note")
-        self.del_note_btn.clicked.connect(self.del_note)
-        layout.addWidget(self.del_note_btn)
+        self.delete_note_btn = QPushButton("Delete Last Tone")
+        self.delete_note_btn.clicked.connect(self.delete_note)
+        layout.addWidget(self.delete_note_btn)
+
+        self.sequence_label = QLabel("Sequence: []")
+        layout.addWidget(self.sequence_label)
 
         self.button = QPushButton("Create Song")
         self.button.clicked.connect(self.make_song)
@@ -305,7 +263,7 @@ class MainWindow(QMainWindow):
         file_delete = self.delete_input.text().strip()
         os.remove(f'assets/sounds/{file_delete}.wav')
 
-    def del_note(self):
+    def delete_note(self):
         if self.note_seq:
             self.note_seq.pop()
             self.sequence_label.setText(f"Sequence: {self.note_seq}")
