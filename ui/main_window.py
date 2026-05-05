@@ -5,6 +5,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import QUrl, QTimer, Qt
 from PySide6.QtGui import QPainter, QColor
+
+
 import random
 import sys
 import os
@@ -243,8 +245,13 @@ class MainWindow(QMainWindow):
 
         #file_path = song.new_wav(channels, title, *self.note_seq)
 
+       
+        self.current_file = file_path
         self.play_audio(file_path)
         self.result_label.setText(f"Playing {title}.wav (saved in assets/sounds)")
+
+        self.note_seq = []
+        self.sequence_label.setText("Sequence: []")
 
     def play_audio(self,file_path):
         url = QUrl.fromLocalFile(os.path.abspath(file_path))
@@ -256,6 +263,38 @@ class MainWindow(QMainWindow):
     def handle_state(self, state):
         if state == QMediaPlayer.StoppedState:
             self.timer.stop()
+
+    
+    def play_current(self):
+        if self.current_file:
+            self.play_audio(self.current_file)
+    
+    def toggle_loop(self):
+        self.looping = not self.looping
+        self.loop_btn.setText(f"Loop: {'ON' if self.looping else 'OFF'}")
+    
+    def change_volume(self, value):
+        self.audio_output.setVolume(value / 100)
+
+    def seek_audio(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            self.player.setPosition(int(duration * (position / 100)))
+
+    def update_progress(self, position):
+        duration = self.player.duration()
+        if duration > 0:
+            percent = int((position / duration) * 100)
+            self.progress.setValue(percent)
+
+    def set_duration(self, duration):
+        self.progress.setRange(0, 100)
+
+    def handle_loop(self, status):
+        from PySide6.QtMultimedia import QMediaPlayer
+        if status == QMediaPlayer.EndOfMedia and self.looping:
+            self.player.setPosition(0)
+            self.player.play()
 
     def add_note(self):
         freq = int(self.freq_box.currentText())
