@@ -1,3 +1,20 @@
+"""
+CST205-01
+ToneCraft
+
+This program allows a user to create new .wav audio files providing their own info such as 
+song title, instrument (Sine wave or Sawtooth wave), delete function, number of channels, frequency and duration.
+Also gave the user audio control with play,pause, and loop buttons, 
+User can also see a audio visualizer
+
+Omar Martinez-Fuentes, Joseph Lustre-Rendon, William (Billy)
+5/16/2026
+
+Who worked on which functions/classes/files
+
+"""
+
+# Imports needed for Main window GUI
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
     QPushButton, QComboBox, QLineEdit, QHBoxLayout, QSlider)
 
@@ -16,6 +33,8 @@ from scipy import signal
 
 # This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
 # For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
+
+# Omar
 class Visualizer(QWidget):
     def __init__(self):
         super().__init__()
@@ -34,7 +53,8 @@ class Visualizer(QWidget):
         for i , height in enumerate(self.bars):
             painter.drawRect(int(i*width), self.height() - height, int(width-2),height)
 
-
+# Main working window
+# Base created by Joseph, Omar updated/added features 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -334,36 +354,11 @@ class MainWindow(QMainWindow):
     #         self.result_label.setText("Please select instrument")
     #         return
 
-    def play_current(self):
-        if self.current_file:
-            self.play_audio(self.current_file)
-    
-    def toggle_loop(self):
-        self.looping = not self.looping
-        self.loop_btn.setText(f"Loop: {'ON' if self.looping else 'OFF'}")
-
-    def handle_loop(self, status):
-        from PySide6.QtMultimedia import QMediaPlayer
-        if status == QMediaPlayer.EndOfMedia and self.looping:
-            self.player.setPosition(0)
-            self.player.play()
-
-    def update_progress(self, position):
-        duration = self.player.duration()
-        if duration > 0:
-            percent = int((position / duration) * 100)
-            self.progress.setValue(percent)
-
-    def change_volume(self, value):
-        self.audio_output.setVolume(value / 100)
-
-    def seek_audio(self, position):
-        duration = self.player.duration()
-        if duration > 0:
-            self.player.setPosition(int(duration * (position / 100)))
-
-    def set_duration(self, duration):
-        self.progress.setRange(0, 100)
+    # def handle_loop(self, status):
+    #     from PySide6.QtMultimedia import QMediaPlayer
+    #     if status == QMediaPlayer.EndOfMedia and self.looping:
+    #         self.player.setPosition(0)
+    #         self.player.play()     
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

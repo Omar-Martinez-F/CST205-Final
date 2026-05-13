@@ -1,3 +1,11 @@
+"""
+CST205-01
+ToneCraft
+
+This file is what creates the Audio based on presented code in class adding new features such as choosing either sin wave or sawtooth wave
+
+"""
+
 import numpy as np
 import os
 # To take data from
@@ -17,7 +25,7 @@ SUBCHUNK_2_ID = b'data'
 # PCM constants
 SUBCHUNK_1_SIZE = (16).to_bytes(4, byteorder='little')
 AUDIO_FORMAT = (1).to_bytes(2, byteorder='little')
-
+# Created by William (Billy), Omar updated/added features 
 def create_pcm(frequency, instrument, duration=0.5):
     # sample = int(SAMPLES_S*duration)
     sample_count = int(SAMPLES_S*duration)
@@ -47,6 +55,8 @@ def create_pcm(frequency, instrument, duration=0.5):
     y_vals[-fade_size:] *= fade_out
     
     return np.int16(y_vals)
+
+    # Old code left for refence 
     # x_vals = np.arange(SAMPLES_S)
     # ang_freq = 2 * np.pi * frequency
 
@@ -70,7 +80,7 @@ def create_pcm(frequency, instrument, duration=0.5):
    
     # return np.int16(y_vals)
 
-
+# Creare the wav here
 def new_wav(channels, filename, instrument, *frequencies):
     # seconds = len(args)
     #filename = main_window.songtitle
