@@ -1,3 +1,20 @@
+"""
+CST205-01
+ToneCraft
+
+This program allows a user to create new .wav audio files providing their own info such as 
+song title, instrument (Sine wave or Sawtooth wave), delete function, number of channels, frequency and duration.
+Also gave the user audio control with play,pause, and loop buttons, 
+User can also see a audio visualizer
+
+Omar Martinez-Fuentes, Joseph Lustre-Rendon, William (Billy)
+5/16/2026
+
+Who worked on which functions/classes/files
+
+"""
+
+# Imports needed for Main window GUI
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
     QPushButton, QComboBox, QLineEdit, QHBoxLayout, QSlider)
 
@@ -16,6 +33,8 @@ from scipy import signal
 
 # This is a super simple Visualizer it has no real action based on the .wav files what it does it creates bars at random ticks from random import
 # For now this should help the GUI look better in the future  we could try to make it react to real music but we would need to change a few things
+
+# Omar
 class Visualizer(QWidget):
     def __init__(self):
         super().__init__()
@@ -34,7 +53,8 @@ class Visualizer(QWidget):
         for i , height in enumerate(self.bars):
             painter.drawRect(int(i*width), self.height() - height, int(width-2),height)
 
-
+# Main working window
+# Base created by Joseph, Omar updated/added features 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
