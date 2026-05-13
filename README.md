@@ -13,3 +13,5 @@ python -m ui.main_window
 Future work: Add the abilty to merge exisitng audio files into a new one
 
 https://github.com/Omar-Martinez-F/CST205-Final
+
+Trello: https://trello.com/b/YhvfLuMX/cst205-final 
