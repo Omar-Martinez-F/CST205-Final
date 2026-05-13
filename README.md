@@ -11,4 +11,5 @@ To run this program make sure a python environment then in the terminal while on
 python -m ui.main_window
 
 Future work: Add the abilty to merge exisitng audio files into a new one
+
 https://github.com/Omar-Martinez-F/CST205-Final
