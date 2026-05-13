@@ -8,6 +8,7 @@ CST205
 
 
 To run this program make sure a python environment then in the terminal while on the root of the project run the command
+
 python -m ui.main_window
 
 Future work: Add the abilty to merge exisitng audio files into a new one
