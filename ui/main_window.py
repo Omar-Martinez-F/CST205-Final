@@ -10,7 +10,7 @@ User can also see a audio visualizer
 Omar Martinez-Fuentes, Joseph Lustre-Rendon, William (Billy)
 5/16/2026
 
-Who worked on which functions/classes/files
+Link to repo: https://github.com/Omar-Martinez-F/CST205-Final
 
 """
 
